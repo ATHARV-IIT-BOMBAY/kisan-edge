@@ -1,0 +1,18 @@
+# OS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node / editors
+node_modules/
+.vscode/
+.idea/
+
+# Local tool config (not project content)
+.claude/
+

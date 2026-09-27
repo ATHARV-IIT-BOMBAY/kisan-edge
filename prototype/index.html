@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>KISAN-EDGE — Prototype</title>
+<style>
+:root{
+  --green:#2e7d32;--green2:#43a047;--navy:#12343b;--ink:#17241c;
+  --amber:#ef9d24;--red:#d84040;--bg:#eef3ee;--card:#fff;--line:#e2ebe3;--muted:#6b7d70;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#cfd8d0;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.phone{width:100%;max-width:390px;height:min(844px,96vh);background:var(--bg);border-radius:34px;
+  overflow:hidden;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.3);border:10px solid #10201a}
+.view{position:absolute;inset:0;display:none;flex-direction:column}
+.view--on{display:flex}
+.body{padding:16px;display:flex;flex-direction:column;gap:14px;flex:1;overflow-y:auto}
+.hdr{background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;padding:16px 18px;
+  display:flex;align-items:center;gap:10px}
+.hdr h1{font-size:18px;letter-spacing:.3px;font-weight:800;flex:1}
+.chip{font-size:11px;background:rgba(255,255,255,.2);padding:4px 8px;border-radius:20px;font-weight:700}
+.lang{background:rgba(255,255,255,.22);border:0;color:#fff;font-weight:700;font-size:13px;
+  padding:5px 10px;border-radius:20px;cursor:pointer}
+.shield{border-radius:20px;padding:18px;color:#fff;display:flex;align-items:center;gap:14px;
+  box-shadow:0 6px 16px rgba(0,0,0,.12)}
+.shield .ic{font-size:30px;width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.22);
+  display:grid;place-items:center;flex-shrink:0}
+.shield .t1{font-size:11px;opacity:.92;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.shield .t2{font-size:20px;font-weight:800;margin-top:3px}
+.sev-green{background:linear-gradient(135deg,#2e9d4f,#3fb862)}
+.sev-amber{background:linear-gradient(135deg,#e8901a,#f2a83b)}
+.sev-red{background:linear-gradient(135deg,#c53434,#e05555)}
+.sec-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.sensors{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.sensor{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 6px;text-align:center}
+.sensor .e{font-size:20px}
+.sensor .v{font-size:20px;font-weight:800;color:var(--ink);margin-top:2px}
+.sensor .k{font-size:10px;color:var(--muted);margin-top:2px}
+.sensor.warn{border-color:#f3c98a;background:#fff8ec}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;position:relative}
+.scan{margin-top:auto;background:linear-gradient(135deg,var(--green),var(--green2));color:#fff;border:0;
+  border-radius:18px;padding:16px;font-size:17px;font-weight:800;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;gap:10px;box-shadow:0 8px 20px rgba(46,125,50,.4)}
+.scan .cam{font-size:22px}
+.back{background:none;border:0;color:var(--muted);font-weight:700;font-size:14px;cursor:pointer;text-align:left}
+.guide{flex:1;min-height:200px;border:3px dashed var(--green2);border-radius:20px;display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);background:#fff;text-align:center;padding:16px}
+.guide .big{font-size:54px}
+.samples{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.leaf{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:10px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;font-weight:700;font-size:13px;color:var(--ink);text-align:left}
+.leaf .lf{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-size:19px;flex-shrink:0}
+.btn{border:0;border-radius:14px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;width:100%}
+.btn-primary{background:var(--green);color:#fff}
+.btn-ghost{background:#e7efe8;color:var(--ink)}
+.row{display:flex;gap:10px}
+.proc{align-items:center;justify-content:center;gap:18px;text-align:center;color:var(--ink);height:100%}
+.spin{width:62px;height:62px;border:6px solid #dbe7dd;border-top-color:var(--green);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.proc .p1{font-size:17px;font-weight:800}
+.proc .p2{font-size:13px;color:var(--muted)}
+.shot{width:100%;height:150px;border-radius:16px;object-fit:cover;display:grid;place-items:center;font-size:64px;
+  background:linear-gradient(135deg,#d7ecd9,#c2e0c6);position:relative}
+.demo-chip{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);color:#fff;font-size:9px;
+  padding:3px 7px;border-radius:10px;letter-spacing:.5px;font-weight:700}
+.diag{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.diag .nm{font-size:19px;font-weight:800;color:var(--ink)}
+.diag .cr{font-size:12px;color:var(--muted);margin-top:2px}
+.pct{font-size:22px;font-weight:800}
+.conf{height:8px;background:#e6efe7;border-radius:6px;overflow:hidden;margin-top:10px}
+.conf i{display:block;height:100%}
+.adv-head{display:flex;align-items:center;gap:10px;margin:-14px -14px 4px;padding:12px 14px;
+  border-radius:18px 18px 0 0;color:#fff;font-weight:800;font-size:15px}
+.line{display:flex;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.line:first-of-type{border-top:0}
+.line .lb{font-size:10px;font-weight:800;color:var(--muted);width:52px;flex-shrink:0;text-transform:uppercase;padding-top:3px}
+.line .tx{font-size:14px;color:var(--ink);font-weight:600;line-height:1.45}
+.because{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+.because b{color:var(--ink)}
+.speak{background:var(--navy);color:#fff}
+</style>
+</head>
+<body>
+<div class="phone">
+  <!-- HOME -->
+  <section id="home" class="view view--on">
+    <div class="hdr">
+      <span style="font-size:22px">🌾</span>
+      <h1 id="l-app">KISAN-EDGE</h1>
+      <span class="chip" id="l-off">📶 OFFLINE</span>
+      <button class="lang" id="langBtn" onclick="toggleLang()">हिंदी</button>
+    </div>
+    <div class="body">
+      <div id="shield" class="shield sev-green">
+        <div class="ic" id="shield-ic">✓</div>
+        <div>
+          <div class="t1" id="shield-t1">FIELD STATUS</div>
+          <div class="t2" id="shield-t2">Field healthy</div>
+        </div>
+      </div>
+      <div class="sec-label" id="l-live">Live readings · Point A</div>
+      <div class="sensors">
+        <div class="sensor" id="s-soil"><div class="e">💧</div><div class="v">18%</div><div class="k" id="k-soil">Soil water</div></div>
+        <div class="sensor" id="s-temp"><div class="e">🌡️</div><div class="v">34°</div><div class="k" id="k-temp">Air temp</div></div>
+        <div class="sensor" id="s-hum"><div class="e">💦</div><div class="v">55%</div><div class="k" id="k-hum">Humidity</div></div>
+      </div>
+      <button class="scan" onclick="go('capture')"><span class="cam">📷</span><span id="l-scan">Scan a leaf</span></button>
+    </div>
+  </section>
+
+  <!-- CAPTURE -->
+  <section id="capture" class="view">
+    <div class="hdr"><button class="back" onclick="go('home')" style="color:#fff">‹ Back</button><h1 id="l-scan2" style="flex:1;text-align:center">Scan a leaf</h1><span style="width:38px"></span></div>
+    <div class="body">
+      <div class="guide"><div class="big">🍃</div><div id="l-guide">Point at one affected leaf</div></div>
+      <label class="btn btn-primary" style="text-align:center;display:block">
+        <span id="l-open">📷 Open camera</span>
+        <input type="file" accept="image/*" capture="environment" style="display:none" onchange="onCamera(event)">
+      </label>
+      <div class="sec-label" id="l-samples">Or try a sample</div>
+      <div class="samples" id="sampleGrid"></div>
+    </div>
+  </section>
+  <!-- PROCESSING -->
+  <section id="proc" class="view">
+    <div class="body proc">
+      <div class="spin"></div>
+      <div class="p1" id="l-analysing">Analysing on device…</div>
+      <div class="p2" id="l-offline2">⚡ On-device · private</div>
+    </div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="result" class="view">
+    <div class="hdr"><button class="back" onclick="go('home')" style="color:#fff">‹ Home</button><h1 style="flex:1;text-align:center;font-size:16px" id="l-res">Result</h1><span style="width:38px"></span></div>
+    <div class="body" id="resultBody"></div>
+  </section>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js"></script>
+<script>
+// Advisory rule engine — inlined so index.html is self-contained.
+// rules.js holds the same logic plus a node self-check (`node rules.js`).
+function advise(obs){
+  const SEV={green:0,amber:1,red:2}, worse=(a,b)=>SEV[a]>=SEV[b]?a:b;
+  if(obs.disease && obs.conf<0.70) return {gate:true,conf:obs.conf};
+  let sev='green'; const en=[],hi=[],because=[];
+  if(obs.disease){
+    sev=worse(sev,obs.severe?'red':'amber');
+    en.push(obs.treat_en); hi.push(obs.treat_hi);
+    because.push(obs.label_en+' detected ('+Math.round(obs.conf*100)+'%).');
+  }
+  if(obs.soil_vwc<20){
+    sev=worse(sev,'amber');
+    en.push('Irrigate now — soil moisture is low.');
+    hi.push('अभी सिंचाई करें — मिट्टी की नमी कम है।');
+    because.push('Soil moisture '+obs.soil_vwc+'% is below the 20% threshold.');
+  } else if(obs.soil_vwc>45){
+    sev=worse(sev,'amber');
+    en.push('Do not irrigate — soil is already saturated.');
+    hi.push('सिंचाई न करें — मिट्टी पहले से संतृप्त है।');
+    because.push('Soil moisture '+obs.soil_vwc+'% is above the 45% waterlogging mark.');
+  }
+  if(obs.disease && obs.air_temp_c>36){
+    en.push('Spray in the early morning or evening — midday heat cuts effectiveness.');
+    hi.push('सुबह जल्दी या शाम को छिड़काव करें — दोपहर की गर्मी असर घटाती है।');
+    because.push('High temperature '+obs.air_temp_c+'°C.');
+  }
+  if(!obs.disease && sev==='green'){
+    en.push('All good. Keep monitoring.');
+    hi.push('सब ठीक है। निगरानी रखते रहें।');
+  }
+  return {gate:false,severity:sev,actions_en:en,actions_hi:hi,because:because};
+}
+</script>
+<script>
+const $ = s => document.querySelector(s);
+let lang = 'en';
+
+const T = {
+  en:{app:'KISAN-EDGE',off:'📶 OFFLINE',scan:'Scan a leaf',guide:'Point at one affected leaf',
+      open:'📷 Open camera',samples:'Or try a sample',listen:'🔊 Listen',newscan:'New scan',
+      what:'What',where:'Where',action:'Action',why:'Why',retake:'↻ Retake photo',
+      analysing:'Analysing on device…',offline2:'⚡ On-device · private',live:'Live readings · Point A',
+      res:'Result',field:'Point A · your field',
+      soil:'Soil water',temp:'Air temp',hum:'Humidity',status:'FIELD STATUS',
+      healthy:'Field healthy',attn:'Needs attention',act:'Action needed',
+      lowt:'Not confident — retake',lowd:'The leaf is unclear. Retake in good light and fill the frame with a single leaf.',
+      okwhat:'Field check',lang:'हिंदी'},
+  hi:{app:'KISAN-EDGE',off:'📶 ऑफ़लाइन',scan:'पत्ती स्कैन करें',guide:'एक प्रभावित पत्ती पर कैमरा रखें',
+      open:'📷 कैमरा खोलें',samples:'या नमूना आज़माएँ',listen:'🔊 सुनें',newscan:'नया स्कैन',
+      what:'क्या',where:'कहाँ',action:'उपाय',why:'क्यों',retake:'↻ फिर से फोटो लें',
+      analysing:'डिवाइस पर विश्लेषण…',offline2:'⚡ डिवाइस पर · निजी',live:'लाइव रीडिंग · पॉइंट A',
+      res:'परिणाम',field:'पॉइंट A · आपका खेत',
+      soil:'मिट्टी की नमी',temp:'तापमान',hum:'नमी',status:'खेत की स्थिति',
+      healthy:'खेत स्वस्थ',attn:'ध्यान दें',act:'कार्रवाई ज़रूरी',
+      lowt:'भरोसा कम — फिर लें',lowd:'पत्ती स्पष्ट नहीं है। अच्छी रोशनी में एक ही पत्ती फ्रेम में भरकर फिर से लें।',
+      okwhat:'खेत जाँच',lang:'EN'}
+};
+// Mock sensor node — in the real kit these arrive over BLE from the ESP32.
+const sensors = { soil_vwc:18, air_temp_c:34, humidity_pct:55 };
+
+// ---- Real on-device model (TF.js): MobileNet, 38 PlantVillage classes. ----
+// Loads once from CDN, caches into IndexedDB, then runs offline on-device.
+const MB="https://cdn.jsdelivr.net/gh/Rishit-dagli/Greenathon-Plant-AI@main/models/plant_disease_tfjs/";
+let MODEL=null, LABELS=null, modelState='idle';
+
+async function loadModel(){
+  if(MODEL) return MODEL;
+  modelState='loading'; paintModelStatus();
+  const cache=(fn,d)=>{ try{ return fn(); }catch(_){ return d; } };   // storage is opaque-origin-safe / best-effort
+  try{
+    LABELS = cache(()=>JSON.parse(localStorage.getItem('pv_labels')||'null'), null);
+    if(!LABELS){ LABELS=await (await fetch(MB+'class_indices.json')).json(); cache(()=>localStorage.setItem('pv_labels',JSON.stringify(LABELS))); }
+    try{ MODEL=await tf.loadLayersModel('indexeddb://plant-disease'); }                              // cached → offline
+    catch(_){ MODEL=await tf.loadLayersModel(MB+'model.json'); try{await MODEL.save('indexeddb://plant-disease');}catch(_){} } // first run (cache best-effort)
+    modelState='ready';
+    try{ const z=tf.zeros([1,224,224,3]); const o=MODEL.predict(z); await o.data(); z.dispose(); o.dispose(); }catch(_){}  // warm-up: first real scan is fast + honestly timed
+  }catch(e){ modelState='offline'; console.warn('model load failed:',e); }
+  paintModelStatus(); return MODEL;
+}
+
+// Preprocessing verified as [-1,1] (x/127.5-1); argmax over the 38-way softmax.
+async function classifyImage(src){
+  const logits=tf.tidy(()=>tf.browser.fromPixels(src).resizeBilinear([224,224]).toFloat().div(127.5).sub(1).expandDims(0));
+  const out=MODEL.predict(logits); const p=await out.data(); logits.dispose(); out.dispose();
+  let bi=0; for(let i=1;i<p.length;i++) if(p[i]>p[bi]) bi=i;
+  return {label:LABELS[bi], conf:p[bi]};
+}
+// ---- Map a PlantVillage label -> the observation advise() consumes ----
+const CROP={Apple:['Apple','सेब','🍎'],Blueberry:['Blueberry','ब्लूबेरी','🫐'],Cherry:['Cherry','चेरी','🍒'],
+  Corn:['Maize','मक्का','🌽'],Grape:['Grape','अंगूर','🍇'],Orange:['Orange','संतरा','🍊'],Peach:['Peach','आड़ू','🍑'],
+  Pepper:['Bell pepper','शिमला मिर्च','🫑'],Potato:['Potato','आलू','🥔'],Raspberry:['Raspberry','रसभरी','🫐'],
+  Soybean:['Soybean','सोयाबीन','🌿'],Squash:['Squash','कद्दू','🎃'],Strawberry:['Strawberry','स्ट्रॉबेरी','🍓'],Tomato:['Tomato','टमाटर','🍅']};
+const SEVERE=/late_blight|virus|curl|mosaic|greening|huanglongbing|haunglongbing|black_rot|esca/i;
+const pretty=s=>s.replace(/_/g,' ').replace(/\s+/g,' ').trim();
+function cropOf(pre){ for(const k in CROP) if(pre.indexOf(k)===0) return CROP[k]; return [pretty(pre),pretty(pre),'🌿']; }
+function adviceFor(cond){
+  const c=cond.toLowerCase();
+  if(/virus|curl|mosaic|greening|huanglongbing|haunglongbing/.test(c)) return ['Remove and destroy infected plants. Control insect vectors (whitefly / psyllid). There is no chemical cure.','संक्रमित पौधे हटाकर नष्ट करें। कीट वाहकों (सफ़ेद मक्खी/सिला) को नियंत्रित करें। रासायनिक इलाज नहीं है।'];
+  if(/bacterial/.test(c)) return ['Spray a copper-based bactericide. Remove infected leaves; avoid overhead irrigation.','तांबा-आधारित जीवाणुनाशक छिड़कें। संक्रमित पत्तियाँ हटाएँ; ऊपर से सिंचाई न करें।'];
+  if(/late_blight/.test(c)) return ['Spray a protectant fungicide (Mancozeb or copper). Remove and destroy infected foliage at once.','सुरक्षात्मक फफूंदनाशक (मैंकोज़ेब/तांबा) छिड़कें। संक्रमित पत्तियाँ तुरंत हटाकर नष्ट करें।'];
+  if(/mildew/.test(c)) return ['Apply sulfur or a mildew-specific fungicide. Reduce humidity around the canopy.','सल्फर या फफूंदी-रोधी दवा लगाएँ। छत्र के पास नमी घटाएँ।'];
+  if(/mite/.test(c)) return ['Spray a miticide or neem oil. Wash the undersides of the leaves.','मकड़ी-रोधी दवा या नीम तेल छिड़कें। पत्तियों की निचली सतह धोएँ।'];
+  if(/mold/.test(c)) return ['Improve ventilation, cut leaf wetness, and apply a fungicide.','हवादार बनाएं, पत्तियों की नमी घटाएँ और फफूंदनाशक लगाएँ।'];
+  return ['Spray a suitable fungicide (Mancozeb or chlorothalonil). Remove affected leaves and improve airflow.','उपयुक्त फफूंदनाशक (मैंकोज़ेब/क्लोरोथैलोनिल) छिड़कें। प्रभावित पत्तियाँ हटाएँ और हवादार बनाएं।'];
+}
+function obsFromPrediction(label,conf){
+  const parts=String(label).split('___'), cr=cropOf(parts[0]||''), cond=parts[1]||'';
+  if(/healthy/i.test(cond)) return {emoji:cr[2],img:null,color:'#2e9d4f',crop_en:cr[0],crop_hi:cr[1],disease:false,severe:false,conf,label_en:'Healthy',label_hi:'स्वस्थ',treat_en:'',treat_hi:''};
+  const ad=adviceFor(cond), severe=SEVERE.test(cond);
+  return {emoji:cr[2],img:null,color:severe?'#d84040':'#ef9d24',crop_en:cr[0],crop_hi:cr[1],disease:true,severe,conf,label_en:pretty(cond),label_hi:pretty(cond),treat_en:ad[0],treat_hi:ad[1]};
+}
+// Zero-setup demo: real PlantVillage leaf images, classified by the real model.
+const CDN="https://cdn.jsdelivr.net/gh/spMohanty/PlantVillage-Dataset@master/raw/color/";
+const DEMOS={
+  tomato:{img:CDN+"Tomato___Late_blight/0003faa8-4b27-4c65-bf42-6d9e352ca1a5___RS_Late.B%204946.JPG",emoji:'🍅',color:'#e2604a'},
+  potato:{img:CDN+"Potato___Early_blight/001187a0-57ab-4329-baff-e7246a9edeb0___RS_Early.B%208178.JPG",emoji:'🥔',color:'#caa24a'},
+  healthy:{img:CDN+"Tomato___healthy/0031da2a-8edd-468f-a8b1-106657717a32___RS_HL%200105.JPG",emoji:'🍃',color:'#2e9d4f'}
+};
+// Canned only for: model-can't-load fallback, and the confidence-gate demo.
+const UNCERTAIN={emoji:'🌫️',img:null,color:'#88aa99',crop_en:'—',crop_hi:'—',disease:true,severe:false,conf:0.54,label_en:'Uncertain',label_hi:'अनिश्चित',treat_en:'',treat_hi:''};
+const fallback=()=>Object.assign(obsFromPrediction('Tomato___Late_blight',0.92),sensors);
+
+let current = null;   // active observation
+let shotImg = null;   // real photo object-URL when the camera / upload is used
+let lastMs = null;    // measured on-device inference time (ms); null when we fell back / no real inference
+
+function go(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('view--on'));
+  $('#'+id).classList.add('view--on');
+}
+
+// getSrc: async ()=>ImageBitmap|canvas|img — runs the real on-device model.
+async function diagnose(getSrc,imgUrl){
+  go('proc');
+  $('#l-analysing').textContent = modelState==='ready'?T[lang].analysing:'Loading model…';
+  try{
+    await loadModel(); if(!MODEL) throw new Error('model unavailable');
+    const src=await getSrc();                          // fetch/decode not counted — time the inference only
+    const t0=performance.now();
+    const r=await classifyImage(src);
+    lastMs=Math.round(performance.now()-t0);
+    current=Object.assign(obsFromPrediction(r.label,r.conf),sensors);
+  }catch(e){ lastMs=null; current=fallback(); }   // graceful: the demo never hard-fails
+  if(imgUrl && current) current.img=imgUrl;
+  renderResult(); go('result');
+}
+
+async function pickSample(key){
+  if(key==='uncertain'){ shotImg=null; lastMs=null; current=Object.assign({},UNCERTAIN,sensors); go('proc'); setTimeout(()=>{renderResult();go('result');},800); return; }
+  shotImg=null; await diagnose(async()=>createImageBitmap(await (await fetch(DEMOS[key].img)).blob()), DEMOS[key].img);
+}
+
+function onCamera(ev){
+  const f=ev.target.files && ev.target.files[0];
+  if(!f) return;
+  shotImg=URL.createObjectURL(f);
+  diagnose(async()=>createImageBitmap(f));
+}
+const SEVCOLOR = {green:'#2e9d4f',amber:'#ef9d24',red:'#d84040'};
+const SEVCLASS = {green:'sev-green',amber:'sev-amber',red:'sev-red'};
+
+function shotHTML(s){
+  const chip='<span class="demo-chip">DEMO</span>';
+  const src = shotImg || s.img;   // real upload wins; else the sample's photo if present
+  let h='<div class="shot" style="background:linear-gradient(135deg,'+s.color+'33,'+s.color+'66)">'+s.emoji;
+  if(src) h+='<img src="'+src+'" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:16px">';
+  return h+chip+'</div>';   // img covers the emoji when it loads; onerror falls back to emoji
+}
+
+function renderResult(){
+  const t=T[lang], s=current, rec=advise(s);
+  const crop = lang==='hi'?s.crop_hi:s.crop_en;
+  let h = shotHTML(s);
+
+  if(rec.gate){
+    h += '<div class="card" style="border-color:#f3c98a;background:#fff8ec">'
+      +  '<div class="diag"><div><div class="nm">⚠️ '+t.lowt+'</div>'
+      +  '<div class="cr">'+Math.round(rec.conf*100)+'% '+(lang==='hi'?'भरोसा':'confidence')+'</div></div></div>'
+      +  '<div class="because" style="margin-top:10px">'+t.lowd+'</div></div>'
+      +  '<button class="btn btn-primary" onclick="go(\'capture\')">'+t.retake+'</button>';
+    $('#resultBody').innerHTML = h;
+    updateShield(rec);
+    return;
+  }
+
+  const label = lang==='hi'?s.label_hi:s.label_en;
+  const col = SEVCOLOR[rec.severity];
+  const actions = (lang==='hi'?rec.actions_hi:rec.actions_en).join(' ');
+  const whatTxt = s.disease ? label : t.okwhat;
+
+  h += '<div class="card">'
+    +  '<div class="diag"><div><div class="nm">'+(s.disease?'':'✓ ')+whatTxt+'</div>'
+    +  '<div class="cr">'+crop+'</div></div>'
+    +  '<div class="pct" style="color:'+col+'">'+Math.round(s.conf*100)+'%</div></div>'
+    +  '<div class="conf"><i style="width:'+Math.round(s.conf*100)+'%;background:'+col+'"></i></div>'
+    +  (lastMs!=null?'<div style="font-size:11px;color:#8a9a8f;margin-top:6px;text-align:right">⚡ '+lastMs+' ms · '+(lang==='hi'?'डिवाइस पर अनुमान':'on-device inference')+'</div>':'')
+    +  '</div>';
+
+  h += '<div class="card">'
+    +  '<div class="adv-head" style="background:'+col+'">'+sevWord(rec.severity)+'</div>'
+    +  line(t.what, whatTxt)
+    +  line(t.where, t.field)
+    +  line(t.action, actions)
+    +  '<div class="because"><b>'+t.why+':</b> '+rec.because.join(' ')+'</div>'
+    +  '</div>';
+
+  h += '<div class="row">'
+    +  '<button class="btn speak" onclick="speakAdvice()">'+t.listen+'</button>'
+    +  '<button class="btn btn-ghost" onclick="go(\'home\')">'+t.newscan+'</button></div>';
+
+  $('#resultBody').innerHTML = h;
+  updateShield(rec);
+  window._spoken = whatTxt + '. ' + actions;
+}
+function line(lb,tx){ return '<div class="line"><div class="lb">'+lb+'</div><div class="tx">'+tx+'</div></div>'; }
+
+function sevWord(sev){
+  return sev==='red'?(lang==='hi'?'लाल · कार्रवाई ज़रूरी':'RED · Act now')
+     : sev==='amber'?(lang==='hi'?'पीला · ध्यान दें':'AMBER · Attention')
+     : (lang==='hi'?'हरा · ठीक है':'GREEN · All good');
+}
+
+function speakAdvice(){
+  if(!window.speechSynthesis || !window._spoken) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(window._spoken);
+  u.lang = lang==='hi'?'hi-IN':'en-IN';
+  speechSynthesis.speak(u);
+}
+
+function updateShield(rec){
+  const t=T[lang], sev=rec.gate?'amber':rec.severity;
+  $('#shield').className='shield '+SEVCLASS[sev];
+  $('#shield-ic').textContent = sev==='red'?'✕':sev==='amber'?'!':'✓';
+  $('#shield-t2').textContent = sev==='red'?t.act:sev==='amber'?t.attn:t.healthy;
+}
+
+function paintModelStatus(){
+  const c=$('#l-off'); if(!c) return;
+  c.textContent = modelState==='loading'?'⏳ Loading AI' : modelState==='ready'?'🧠 On-device' : modelState==='offline'?'⚠ Model offline' : T[lang].off;
+}
+
+function paintSensors(){
+  $('#s-soil').classList.toggle('warn', sensors.soil_vwc<20 || sensors.soil_vwc>45);
+  $('#s-temp').classList.toggle('warn', sensors.air_temp_c>36);
+}
+
+function toggleLang(){ lang = lang==='en'?'hi':'en'; applyLang(); }
+function applyLang(){
+  const t=T[lang];
+  $('#langBtn').textContent=t.lang;
+  paintModelStatus();
+  $('#l-scan').textContent=t.scan;
+  $('#l-scan2').textContent=t.scan;
+  $('#l-guide').textContent=t.guide;
+  $('#l-open').textContent=t.open;
+  $('#l-samples').textContent=t.samples;
+  $('#l-analysing').textContent=t.analysing;
+  $('#l-offline2').textContent=t.offline2;
+  $('#l-live').textContent=t.live;
+  $('#l-res').textContent=t.res;
+  $('#k-soil').textContent=t.soil;
+  $('#k-temp').textContent=t.temp;
+  $('#k-hum').textContent=t.hum;
+  $('#shield-t1').textContent=t.status;
+  buildSamples();
+  updateShield(advise(Object.assign({disease:false,conf:1},sensors)));
+  if($('#result').classList.contains('view--on') && current) renderResult();
+}
+
+function buildSamples(){
+  const names = {
+    tomato:  lang==='hi'?'टमाटर · रोगग्रस्त':'Tomato · diseased',
+    potato:  lang==='hi'?'आलू · रोगग्रस्त':'Potato · diseased',
+    healthy: lang==='hi'?'स्वस्थ पत्ती':'Healthy leaf',
+    uncertain: lang==='hi'?'धुंधली फोटो':'Blurry photo'
+  };
+  const meta = { tomato:DEMOS.tomato, potato:DEMOS.potato, healthy:DEMOS.healthy, uncertain:{emoji:'🌫️',color:'#88aa99',img:null} };
+  let h='';
+  for(const k of ['tomato','potato','healthy','uncertain']){
+    const s=meta[k];
+    const thumb = s.img
+      ? '<span class="lf" style="background:'+s.color+'22;position:relative;overflow:hidden">'+s.emoji+'<img src="'+s.img+'" onerror="this.remove()" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></span>'
+      : '<span class="lf" style="background:'+s.color+'22">'+s.emoji+'</span>';
+    h+='<button class="leaf" onclick="pickSample(\''+k+'\')">'+thumb+names[k]+'</button>';
+  }
+  $('#sampleGrid').innerHTML=h;
+}
+
+paintSensors();
+applyLang();
+loadModel();   // preload the model while the user is on the home screen
+</script>
+</body>
+</html>
